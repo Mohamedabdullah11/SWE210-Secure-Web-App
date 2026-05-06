@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — SecureApp{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">Welcome back, <strong>{{ user.username }}</strong></p>
+</div>
+
+<div class="dashboard-grid">
+    <div class="stat-card">
+        <div class="stat-icon">👤</div>
+        <div class="stat-label">Your Role</div>
+        <div class="stat-value role-{{ user.role }}">{{ user.role | upper }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔐</div>
+        <div class="stat-label">Data Encryption</div>
+        <div class="stat-value green">ACTIVE</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🛡</div>
+        <div class="stat-label">Auth Method</div>
+        <div class="stat-value">bcrypt + Session</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔑</div>
+        <div class="stat-label">Access Control</div>
+        <div class="stat-value">RBAC</div>
+    </div>
+</div>
+
+<div class="content-grid">
+    <div class="info-panel">
+        <h2 class="panel-title">Your Account Info</h2>
+        <table class="info-table">
+            <tr>
+                <td class="info-key">Username</td>
+                <td class="info-val">{{ user.username }}</td>
+            </tr>
+            <tr>
+                <td class="info-key">Role</td>
+                <td class="info-val"><span class="role-badge role-{{ user.role }}">{{ user.role }}</span></td>
+            </tr>
+            <tr>
+                <td class="info-key">Email</td>
+                <td class="info-val">{{ user.email if user.email else '—' }} <span class="enc-tag">🔐 encrypted in DB</span></td>
+            </tr>
+            <tr>
+                <td class="info-key">Phone</td>
+                <td class="info-val">{{ user.phone if user.phone else '—' }} <span class="enc-tag">🔐 encrypted in DB</span></td>
+            </tr>
+        </table>
+        <a href="{{ url_for('profile') }}" class="btn btn-secondary mt-1">Edit Profile</a>
+    </div>
+
+    <div class="info-panel">
+        <h2 class="panel-title">Security Overview</h2>
+        <div class="security-list">
+            <div class="sec-item">
+                <span class="sec-icon ok">✓</span>
+                <div>
+                    <strong>Password Hashing</strong>
+                    <p>bcrypt with automatic salt generation — passwords never stored in plaintext</p>
+                </div>
+            </div>
+            <div class="sec-item">
+                <span class="sec-icon ok">✓</span>
+                <div>
+                    <strong>Data Encryption</strong>
+                    <p>Email and phone encrypted with Fernet (AES-128-CBC + HMAC-SHA256) before DB storage</p>
+                </div>
+            </div>
+            <div class="sec-item">
+                <span class="sec-icon ok">✓</span>
+                <div>
+                    <strong>RBAC Enforced</strong>
+                    <p>Admin routes protected with server-side role checks — 403 on unauthorized access</p>
+                </div>
+            </div>
+            <div class="sec-item">
+                <span class="sec-icon ok">✓</span>
+                <div>
+                    <strong>Session Security</strong>
+                    <p>Server-side sessions with secret key signing — no sensitive data in cookies</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

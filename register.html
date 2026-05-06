@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}Admin Panel — SecureApp{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">⚙ Admin Panel</h1>
+    <p class="page-subtitle">Full user management — Admin access only</p>
+</div>
+
+<div class="admin-stats">
+    <div class="stat-card small">
+        <div class="stat-icon">👥</div>
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value">{{ users | length }}</div>
+    </div>
+    <div class="stat-card small">
+        <div class="stat-icon">🔑</div>
+        <div class="stat-label">Admins</div>
+        <div class="stat-value">{{ users | selectattr('role', 'equalto', 'admin') | list | length }}</div>
+    </div>
+    <div class="stat-card small">
+        <div class="stat-icon">👤</div>
+        <div class="stat-label">Regular Users</div>
+        <div class="stat-value">{{ users | selectattr('role', 'equalto', 'user') | list | length }}</div>
+    </div>
+</div>
+
+<div class="panel-card">
+    <h2 class="panel-title">User Management</h2>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Username</th>
+                    <th>Email (decrypted)</th>
+                    <th>Phone (decrypted)</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr class="{% if u.role == 'admin' %}row-admin{% endif %}">
+                    <td>{{ u.id }}</td>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td>{{ u.email if u.email else '—' }}</td>
+                    <td>{{ u.phone if u.phone else '—' }}</td>
+                    <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
+                    <td class="action-cell">
+                        {% if u.role != 'admin' %}
+                        <form method="POST" action="{{ url_for('promote_user', user_id=u.id) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Promote {{ u.username }} to admin?')">Promote</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ u.username }}?')">Delete</button>
+                        </form>
+                        {% else %}
+                        <span class="text-muted">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="info-panel mt-2">
+    <h2 class="panel-title">Raw DB Encrypted Values</h2>
+    <p class="text-muted" style="margin-bottom:1rem">This shows what is actually stored in SQLite — proving encryption is working:</p>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>email_enc (ciphertext in DB)</th>
+                    <th>phone_enc (ciphertext in DB)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td><strong>{{ u.username }}</strong></td>
+                    <td class="cipher-cell">{{ u.email_enc[:60] }}{% if u.email_enc|length > 60 %}…{% endif %}</td>
+                    <td class="cipher-cell">{{ u.phone_enc[:60] }}{% if u.phone_enc|length > 60 %}…{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

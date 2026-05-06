@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% block title %}Profile — SecureApp{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">My Profile</h1>
+    <p class="page-subtitle">Personal data is encrypted with Fernet (AES-128) before storage</p>
+</div>
+
+<div class="profile-grid">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-icon">📋</div>
+            <h2 class="auth-title" style="font-size:1.4rem">Update Profile</h2>
+        </div>
+        <form method="POST" action="{{ url_for('profile') }}" class="auth-form">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" value="{{ user.username }}" disabled class="input-disabled">
+            </div>
+            <div class="form-group">
+                <label for="email">Email <span class="enc-tag">🔐 stored encrypted</span></label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone <span class="enc-tag">🔐 stored encrypted</span></label>
+                <input type="text" id="phone" name="phone" value="{{ user.phone }}" placeholder="+1 234 567 8900">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+        </form>
+    </div>
+
+    <div class="info-panel">
+        <h2 class="panel-title">How Encryption Works</h2>
+        <div class="encrypt-flow">
+            <div class="flow-step">
+                <div class="flow-num">1</div>
+                <div class="flow-text">
+                    <strong>Input</strong>
+                    <p>You enter plaintext email/phone</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <div class="flow-num">2</div>
+                <div class="flow-text">
+                    <strong>Fernet Encrypt</strong>
+                    <p>AES-128-CBC + HMAC-SHA256 applied using a server-side key</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <div class="flow-num">3</div>
+                <div class="flow-text">
+                    <strong>DB Storage</strong>
+                    <p>Only the ciphertext (base64 token) is stored in SQLite</p>
+                </div>
+            </div>
+            <div class="flow-arrow">↓</div>
+            <div class="flow-step">
+                <div class="flow-num">4</div>
+                <div class="flow-text">
+                    <strong>Decryption on Read</strong>
+                    <p>Token is decrypted server-side before display — never exposed raw</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
