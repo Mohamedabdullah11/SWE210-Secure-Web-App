@@ -13,19 +13,19 @@
         <div class="stat-value role-{{ user.role }}">{{ user.role | upper }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">🔐</div>
-        <div class="stat-label">Data Encryption</div>
-        <div class="stat-value green">ACTIVE</div>
+        <div class="stat-icon">📊</div>
+        <div class="stat-label">Current GPA</div>
+        <div class="stat-value green">{{ "%.2f"|format(user.get_gpa()) }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">🛡</div>
-        <div class="stat-label">Auth Method</div>
-        <div class="stat-value">bcrypt + Session</div>
+        <div class="stat-icon">📚</div>
+        <div class="stat-label">Subjects</div>
+        <div class="stat-value">{{ user.grades|length }}</div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon">🔑</div>
-        <div class="stat-label">Access Control</div>
-        <div class="stat-value">RBAC</div>
+        <div class="stat-icon">🎓</div>
+        <div class="stat-label">Total Credits</div>
+        <div class="stat-value">{{ user.total_credits() }}</div>
     </div>
 </div>
 

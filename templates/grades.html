@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% block title %}My Grades — SecureApp{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📊 My Grades</h1>
+    <p class="page-subtitle">Track your subjects, scores and GPA</p>
+</div>
+
+<!-- GPA Summary Cards -->
+<div class="gpa-summary">
+    <div class="gpa-card gpa-main">
+        <div class="gpa-label">Cumulative GPA</div>
+        <div class="gpa-value {% if user.get_gpa() >= 3.5 %}gpa-high{% elif user.get_gpa() >= 2.5 %}gpa-mid{% else %}gpa-low{% endif %}">
+            {{ "%.2f"|format(user.get_gpa()) }}
+        </div>
+        <div class="gpa-sub">out of 4.00</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Total Subjects</div>
+        <div class="gpa-value">{{ user.grades|length }}</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Total Credits</div>
+        <div class="gpa-value">{{ user.total_credits() }}</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Passed</div>
+        <div class="gpa-value gpa-high">{{ user.grades|selectattr('score','ge',50)|list|length }}</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Failed</div>
+        <div class="gpa-value {% if user.grades|selectattr('score','lt',50)|list|length > 0 %}gpa-low{% endif %}">
+            {{ user.grades|selectattr('score','lt',50)|list|length }}
+        </div>
+    </div>
+</div>
+
+<div class="grades-grid">
+    <!-- Add Grade Form -->
+    <div class="panel-card">
+        <h2 class="panel-title">➕ Add Grade</h2>
+        <form method="POST" action="{{ url_for('add_grade') }}" class="grade-form">
+            <div class="form-group">
+                <label>Subject Name *</label>
+                <input type="text" name="subject" required placeholder="e.g. Calculus II" maxlength="100">
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Score (0-100) *</label>
+                    <input type="number" name="score" required min="0" max="100" step="0.1" placeholder="85.5">
+                </div>
+                <div class="form-group">
+                    <label>Credits (1-6)</label>
+                    <select name="credits">
+                        {% for c in [1,2,3,4,5,6] %}
+                        <option value="{{ c }}" {% if c == 3 %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Semester (optional)</label>
+                <input type="text" name="semester" placeholder="e.g. Fall 2024" maxlength="50">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Add Grade</button>
+        </form>
+
+        <!-- Grade Scale Reference -->
+        <div class="grade-scale">
+            <h3 class="scale-title">Grade Scale</h3>
+            <div class="scale-grid">
+                <span class="scale-item grade-a">A+ (90-100) = 4.0</span>
+                <span class="scale-item grade-a">A (85-89) = 3.7</span>
+                <span class="scale-item grade-a">A- (80-84) = 3.3</span>
+                <span class="scale-item grade-b">B+ (75-79) = 3.0</span>
+                <span class="scale-item grade-b">B (70-74) = 2.7</span>
+                <span class="scale-item grade-b">B- (65-69) = 2.3</span>
+                <span class="scale-item grade-c">C+ (60-64) = 2.0</span>
+                <span class="scale-item grade-c">C (55-59) = 1.7</span>
+                <span class="scale-item grade-c">C- (50-54) = 1.3</span>
+                <span class="scale-item grade-d">D (45-49) = 1.0</span>
+                <span class="scale-item grade-f">F (0-44) = 0.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grades Table -->
+    <div class="panel-card">
+        <h2 class="panel-title">📋 Grade Records</h2>
+        {% if user.grades %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Score</th>
+                        <th>Grade</th>
+                        <th>Credits</th>
+                        <th>Semester</th>
+                        <th>Status</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for g in user.grades %}
+                    <tr>
+                        <td><strong>{{ g.subject }}</strong></td>
+                        <td class="mono">{{ g.score }}</td>
+                        <td>
+                            <span class="grade-badge grade-{{ g.letter_grade()[0]|lower }}">
+                                {{ g.letter_grade() }}
+                            </span>
+                        </td>
+                        <td class="mono">{{ g.credits }}</td>
+                        <td class="text-muted">{{ g.semester if g.semester else '—' }}</td>
+                        <td>
+                            <span class="status-badge {% if g.status() == 'Pass' %}status-pass{% else %}status-fail{% endif %}">
+                                {{ g.status() }}
+                            </span>
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_grade', gid=g.id) }}" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ g.subject }}?')">✕</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-footer">
+                        <td><strong>GPA</strong></td>
+                        <td colspan="2"><strong class="gpa-inline">{{ "%.2f"|format(user.get_gpa()) }} / 4.00</strong></td>
+                        <td><strong>{{ user.total_credits() }}</strong></td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>No grades yet. Add your first subject using the form.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

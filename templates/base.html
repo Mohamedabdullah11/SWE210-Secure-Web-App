@@ -17,6 +17,7 @@
         </div>
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('grades') }}" class="nav-link {% if request.endpoint == 'grades' %}active{% endif %}">📊 Grades</a>
             <a href="{{ url_for('profile') }}" class="nav-link {% if request.endpoint == 'profile' %}active{% endif %}">Profile</a>
             {% if session.role == 'admin' %}
             <a href="{{ url_for('admin_panel') }}" class="nav-link admin-link {% if request.endpoint == 'admin_panel' %}active{% endif %}">⚙ Admin</a>

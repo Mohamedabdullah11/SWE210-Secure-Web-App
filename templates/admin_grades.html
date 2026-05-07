@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }}'s Grades — Admin{% endblock %}
+{% block content %}
+<div class="page-header">
+    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary" style="margin-bottom:1rem">← Back to Admin</a>
+    <h1 class="page-title">📊 {{ user.username }}'s Grades</h1>
+    <p class="page-subtitle">Admin view — read only</p>
+</div>
+
+<div class="gpa-summary">
+    <div class="gpa-card gpa-main">
+        <div class="gpa-label">GPA</div>
+        <div class="gpa-value {% if user.get_gpa() >= 3.5 %}gpa-high{% elif user.get_gpa() >= 2.5 %}gpa-mid{% else %}gpa-low{% endif %}">
+            {{ "%.2f"|format(user.get_gpa()) }}
+        </div>
+        <div class="gpa-sub">out of 4.00</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Subjects</div>
+        <div class="gpa-value">{{ user.grades|length }}</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Credits</div>
+        <div class="gpa-value">{{ user.total_credits() }}</div>
+    </div>
+    <div class="gpa-card">
+        <div class="gpa-label">Passed</div>
+        <div class="gpa-value gpa-high">{{ user.grades|selectattr('score','ge',50)|list|length }}</div>
+    </div>
+</div>
+
+<div class="panel-card">
+    {% if user.grades %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr><th>Subject</th><th>Score</th><th>Grade</th><th>Credits</th><th>Semester</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for g in user.grades %}
+                <tr>
+                    <td><strong>{{ g.subject }}</strong></td>
+                    <td class="mono">{{ g.score }}</td>
+                    <td><span class="grade-badge grade-{{ g.letter_grade()[0]|lower }}">{{ g.letter_grade() }}</span></td>
+                    <td class="mono">{{ g.credits }}</td>
+                    <td class="text-muted">{{ g.semester if g.semester else '—' }}</td>
+                    <td><span class="status-badge {% if g.status() == 'Pass' %}status-pass{% else %}status-fail{% endif %}">{{ g.status() }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr class="table-footer">
+                    <td><strong>GPA</strong></td>
+                    <td colspan="2"><strong class="gpa-inline">{{ "%.2f"|format(user.get_gpa()) }} / 4.00</strong></td>
+                    <td><strong>{{ user.total_credits() }}</strong></td>
+                    <td colspan="2"></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>This user has no grades yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
