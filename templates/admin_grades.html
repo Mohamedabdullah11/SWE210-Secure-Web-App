@@ -2,9 +2,12 @@
 {% block title %}{{ user.username }}'s Grades — Admin{% endblock %}
 {% block content %}
 <div class="page-header">
-    <a href="{{ url_for('admin_panel') }}" class="btn btn-secondary" style="margin-bottom:1rem">← Back to Admin</a>
-    <h1 class="page-title">📊 {{ user.username }}'s Grades</h1>
-    <p class="page-subtitle">Admin view — read only</p>
+    <a href="{{ url_for('manage_grades') }}" class="btn btn-secondary" style="margin-bottom:1rem">← Back to Students List</a>
+    <div style="background: rgba(255,77,109,.15); border: 2px solid var(--danger); padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem;">
+        <h2 style="color: var(--danger); margin-bottom: 5px;">🚨 Administrator Mode</h2>
+        <p style="color: var(--text);">You are currently managing grades for student: <strong style="color: white; font-size: 1.2rem;">{{ user.username }}</strong></p>
+    </div>
+    <h1 class="page-title">📊 Manage {{ user.username }}'s Grades</h1>
 </div>
 
 <div class="gpa-summary">
@@ -29,40 +32,68 @@
     </div>
 </div>
 
-<div class="panel-card">
-    {% if user.grades %}
-    <div class="table-wrapper">
-        <table class="data-table">
-            <thead>
-                <tr><th>Subject</th><th>Score</th><th>Grade</th><th>Credits</th><th>Semester</th><th>Status</th></tr>
-            </thead>
-            <tbody>
-                {% for g in user.grades %}
-                <tr>
-                    <td><strong>{{ g.subject }}</strong></td>
-                    <td class="mono">{{ g.score }}</td>
-                    <td><span class="grade-badge grade-{{ g.letter_grade()[0]|lower }}">{{ g.letter_grade() }}</span></td>
-                    <td class="mono">{{ g.credits }}</td>
-                    <td class="text-muted">{{ g.semester if g.semester else '—' }}</td>
-                    <td><span class="status-badge {% if g.status() == 'Pass' %}status-pass{% else %}status-fail{% endif %}">{{ g.status() }}</span></td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            <tfoot>
-                <tr class="table-footer">
-                    <td><strong>GPA</strong></td>
-                    <td colspan="2"><strong class="gpa-inline">{{ "%.2f"|format(user.get_gpa()) }} / 4.00</strong></td>
-                    <td><strong>{{ user.total_credits() }}</strong></td>
-                    <td colspan="2"></td>
-                </tr>
-            </tfoot>
-        </table>
+<div class="grades-grid">
+    <!-- Form Section -->
+    <div class="panel-card">
+        <h2 class="panel-title">➕ Add Grade</h2>
+        <form method="POST" action="{{ url_for('admin_add_grade', uid=user.id) }}" class="grade-form">
+            <div class="form-group">
+                <label>Subject Name</label>
+                <input type="text" name="subject" required placeholder="e.g. Math 101" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label>Score (0-100)</label>
+                <input type="number" name="score" required min="0" max="100" step="0.1" placeholder="85.5">
+            </div>
+            <div class="form-group">
+                <label>Credits</label>
+                <input type="number" name="credits" required min="1" max="6" value="3">
+            </div>
+            <button type="submit" class="btn btn-primary btn-full mt-1">Add Grade</button>
+        </form>
     </div>
-    {% else %}
-    <div class="empty-state">
-        <div class="empty-icon">📭</div>
-        <p>This user has no grades yet.</p>
+
+    <!-- Table Section -->
+    <div class="panel-card">
+        <h2 class="panel-title">📋 {{ user.username }}'s Records</h2>
+        {% if user.grades %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Subject</th><th>Score</th><th>Grade</th><th>Credits</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for g in user.grades %}
+                    <tr>
+                        <td><strong>{{ g.subject }}</strong></td>
+                        <td class="mono">{{ g.score }}</td>
+                        <td><span class="grade-badge grade-{{ g.letter_grade()[0]|lower }}">{{ g.letter_grade() }}</span></td>
+                        <td class="mono">{{ g.credits }}</td>
+                        <td><span class="status-badge {% if g.status() == 'Pass' %}status-pass{% else %}status-fail{% endif %}">{{ g.status() }}</span></td>
+                        <td>
+                            <form method="POST" action="{{ url_for('delete_grade', gid=g.id) }}" style="display:inline">
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ g.subject }}?')">✕</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="table-footer">
+                        <td><strong>GPA</strong></td>
+                        <td colspan="2"><strong class="gpa-inline">{{ "%.2f"|format(user.get_gpa()) }} / 4.00</strong></td>
+                        <td><strong>{{ user.total_credits() }}</strong></td>
+                        <td colspan="2"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>This user has no grades yet.</p>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 {% endblock %}

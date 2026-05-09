@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Manage Grades — SecureApp{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📝 Manage Student Grades</h1>
+    <p class="page-subtitle">Select a student to view or add grades</p>
+</div>
+
+<div class="panel-card">
+    <h2 class="panel-title">Students List</h2>
+    {% if students %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Student Name</th>
+                    <th>Total Subjects</th>
+                    <th>Current GPA</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td>{{ s.id }}</td>
+                    <td><strong>{{ s.username }}</strong></td>
+                    <td>{{ s.grades|length }}</td>
+                    <td><strong class="gpa-inline">{{ "%.2f"|format(s.get_gpa()) }}</strong></td>
+                    <td>
+                        <a href="{{ url_for('admin_view_grades', uid=s.id) }}" class="btn btn-sm btn-primary">➕ Add / Edit Grades</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">👥</div>
+        <p>No students found in the system yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

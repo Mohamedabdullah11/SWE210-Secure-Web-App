@@ -36,38 +36,9 @@
 </div>
 
 <div class="grades-grid">
-    <!-- Add Grade Form -->
     <div class="panel-card">
-        <h2 class="panel-title">➕ Add Grade</h2>
-        <form method="POST" action="{{ url_for('add_grade') }}" class="grade-form">
-            <div class="form-group">
-                <label>Subject Name *</label>
-                <input type="text" name="subject" required placeholder="e.g. Calculus II" maxlength="100">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Score (0-100) *</label>
-                    <input type="number" name="score" required min="0" max="100" step="0.1" placeholder="85.5">
-                </div>
-                <div class="form-group">
-                    <label>Credits (1-6)</label>
-                    <select name="credits">
-                        {% for c in [1,2,3,4,5,6] %}
-                        <option value="{{ c }}" {% if c == 3 %}selected{% endif %}>{{ c }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Semester (optional)</label>
-                <input type="text" name="semester" placeholder="e.g. Fall 2024" maxlength="50">
-            </div>
-            <button type="submit" class="btn btn-primary btn-full">Add Grade</button>
-        </form>
-
         <!-- Grade Scale Reference -->
-        <div class="grade-scale">
-            <h3 class="scale-title">Grade Scale</h3>
+        <h2 class="panel-title">📈 Grade Scale</h2>
             <div class="scale-grid">
                 <span class="scale-item grade-a">A+ (90-100) = 4.0</span>
                 <span class="scale-item grade-a">A (85-89) = 3.7</span>
@@ -81,7 +52,6 @@
                 <span class="scale-item grade-d">D (45-49) = 1.0</span>
                 <span class="scale-item grade-f">F (0-44) = 0.0</span>
             </div>
-        </div>
     </div>
 
     <!-- Grades Table -->
@@ -98,7 +68,6 @@
                         <th>Credits</th>
                         <th>Semester</th>
                         <th>Status</th>
-                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -118,11 +87,6 @@
                                 {{ g.status() }}
                             </span>
                         </td>
-                        <td>
-                            <form method="POST" action="{{ url_for('delete_grade', gid=g.id) }}" style="display:inline">
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ g.subject }}?')">✕</button>
-                            </form>
-                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -131,7 +95,7 @@
                         <td><strong>GPA</strong></td>
                         <td colspan="2"><strong class="gpa-inline">{{ "%.2f"|format(user.get_gpa()) }} / 4.00</strong></td>
                         <td><strong>{{ user.total_credits() }}</strong></td>
-                        <td colspan="3"></td>
+                        <td colspan="2"></td>
                     </tr>
                 </tfoot>
             </table>
@@ -139,7 +103,7 @@
         {% else %}
         <div class="empty-state">
             <div class="empty-icon">📭</div>
-            <p>No grades yet. Add your first subject using the form.</p>
+            <p>No grades yet. Your admin or instructor will add them.</p>
         </div>
         {% endif %}
     </div>

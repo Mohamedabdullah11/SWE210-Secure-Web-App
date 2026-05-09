@@ -48,13 +48,12 @@
                     <td><span class="role-badge role-{{ u.role }}">{{ u.role }}</span></td>
                     <td class="action-cell">
                         {% if u.role != 'admin' %}
-                        <form method="POST" action="{{ url_for('promote_user', user_id=u.id) }}" style="display:inline">
+                        <form method="POST" action="{{ url_for('promote_user', uid=u.id) }}" style="display:inline">
                             <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Promote {{ u.username }} to admin?')">Promote</button>
                         </form>
-                        <form method="POST" action="{{ url_for('delete_user', user_id=u.id) }}" style="display:inline">
+                        <form method="POST" action="{{ url_for('delete_user', uid=u.id) }}" style="display:inline">
                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete {{ u.username }}?')">Delete</button>
                         </form>
-                        <a href="{{ url_for('admin_view_grades', user_id=u.id) }}" class="btn btn-sm btn-secondary">📊 Grades</a>
                         {% else %}
                         <span class="text-muted">Protected</span>
                         {% endif %}

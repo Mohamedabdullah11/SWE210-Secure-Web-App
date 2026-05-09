@@ -165,35 +165,20 @@ def grades():
     user = User.query.get(session['user_id'])
     return render_template('grades.html', user=user)
 
-@app.route('/grades/add', methods=['POST'])
-@login_required
-def add_grade():
-    subject  = request.form.get('subject','').strip()
-    credits  = request.form.get('credits','3')
-    score    = request.form.get('score','')
-    semester = request.form.get('semester','').strip()
-    if not subject or not score:
-        flash('Subject and score required.','danger')
-        return redirect(url_for('grades'))
-    try:
-        sf = float(score); ci = int(credits)
-        if not (0 <= sf <= 100) or not (1 <= ci <= 6): raise ValueError
-    except ValueError:
-        flash('Score must be 0-100, credits 1-6.','danger')
-        return redirect(url_for('grades'))
-    db.session.add(Grade(user_id=session['user_id'], subject=subject, credits=ci, score=sf, semester=semester))
-    db.session.commit()
-    flash(f'"{subject}" added!','success')
-    return redirect(url_for('grades'))
+@app.route('/manage_grades')
+@admin_required
+def manage_grades():
+    students = User.query.filter_by(role='user').all()
+    return render_template('manage_grades.html', students=students)
 
 @app.route('/grades/delete/<int:gid>', methods=['POST'])
-@login_required
+@admin_required
 def delete_grade(gid):
     g = Grade.query.get_or_404(gid)
-    if g.user_id != session['user_id']: abort(403)
+    uid = g.user_id
     db.session.delete(g); db.session.commit()
     flash('Grade deleted.','info')
-    return redirect(url_for('grades'))
+    return redirect(url_for('admin_view_grades', uid=uid))
 
 @app.route('/profile', methods=['GET','POST'])
 @login_required
@@ -235,6 +220,28 @@ def promote_user(uid):
 def admin_view_grades(uid):
     user = User.query.get_or_404(uid)
     return render_template('admin_grades.html', user=user)
+
+@app.route('/admin/grades/<int:uid>/add', methods=['POST'])
+@admin_required
+def admin_add_grade(uid):
+    user = User.query.get_or_404(uid)
+    subject  = request.form.get('subject','').strip()
+    credits  = request.form.get('credits','3')
+    score    = request.form.get('score','')
+    semester = request.form.get('semester','').strip()
+    if not subject or not score:
+        flash('Subject and score required.','danger')
+        return redirect(url_for('admin_view_grades', uid=uid))
+    try:
+        sf = float(score); ci = int(credits)
+        if not (0 <= sf <= 100) or not (1 <= ci <= 6): raise ValueError
+    except ValueError:
+        flash('Score must be 0-100, credits 1-6.','danger')
+        return redirect(url_for('admin_view_grades', uid=uid))
+    db.session.add(Grade(user_id=uid, subject=subject, credits=ci, score=sf, semester=semester))
+    db.session.commit()
+    flash(f'"{subject}" added to {user.username}!','success')
+    return redirect(url_for('admin_view_grades', uid=uid))
 
 @app.errorhandler(403)
 def forbidden(e): return render_template('403.html'), 403
