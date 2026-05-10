@@ -165,12 +165,6 @@ def grades():
     user = User.query.get(session['user_id'])
     return render_template('grades.html', user=user)
 
-@app.route('/manage_grades')
-@admin_required
-def manage_grades():
-    students = User.query.filter_by(role='user').all()
-    return render_template('manage_grades.html', students=students)
-
 @app.route('/grades/delete/<int:gid>', methods=['POST'])
 @admin_required
 def delete_grade(gid):
@@ -195,6 +189,12 @@ def profile():
 @admin_required
 def admin_panel():
     return render_template('admin.html', users=User.query.all())
+
+@app.route('/admin/manage_grades')
+@admin_required
+def manage_grades():
+    students = User.query.filter_by(role='user').all()
+    return render_template('manage_grades.html', students=students)
 
 @app.route('/admin/delete/<int:uid>', methods=['POST'])
 @admin_required
